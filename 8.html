@@ -1,0 +1,141 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backprop Flow Lab: Chain Rule Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .node { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .node:hover { transform: scale(1.1); filter: brightness(0.9); }
+        .gradient-flow { stroke-dasharray: 10; animation: flow 2s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -20; } }
+        .task-step { border-left: 4px solid #e2e8f0; transition: all 0.3s; }
+        .task-step.active { border-left-color: #6366f1; background: #f5f3ff; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+<div class="max-w-7xl mx-auto">
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-end border-b pb-6">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Backpropagation<span class="text-indigo-600">Flow</span></h1>
+            <p class="text-slate-500 text-sm"></p>
+        </div>
+        <button onclick="triggerBackprop()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all active:scale-95">
+            Run Backpropagation
+        </button>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-4 space-y-4">
+            <div class="glass-card p-5 bg-indigo-50/50 border-indigo-100">
+                <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">Simple Terms</h3>
+                <div class="space-y-3 text-[11px] leading-relaxed text-slate-600">
+                    <p><strong>• The Chain Rule:</strong> Like a relay race. To know how the start affected the finish, you multiply the speed of every runner in between.</p>
+                    <p><strong>• Forward Pass:</strong> Data flows forward to calculate the final result (Loss).</p>
+                    <p><strong>• Backward Pass:</strong> Error signals flow backward to tell each "runner" how much they need to improve.</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 space-y-3">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Diagnostic Tasks</h3>
+                <div id="t1" onclick="selectTask(1)" class="task-step active p-4 rounded-xl cursor-pointer">
+                    <p class="text-xs font-bold">Task 1: Gradient Multiplication</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Change the weight w_1 and observe how it scales the signal.</p>
+                </div>
+                <div id="t2" onclick="selectTask(2)" class="task-step p-4 rounded-xl cursor-pointer">
+                    <p class="text-xs font-bold">Task 2: Recursive Update</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Trace the error from the output back to the input $x$.</p>
+                </div>
+            </div>
+
+            <div id="coach-box" class="glass-card p-5 border-l-4 border-amber-400 bg-amber-50/50">
+                <h3 class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Coach Suggestion</h3>
+                <p id="coach-text" class="text-xs text-slate-600 leading-relaxed italic">"Click 'Run Backpropagation' to see the chain rule in motion."</p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            <div class="glass-card p-8 flex flex-col items-center justify-center relative min-h-[500px]">
+                <svg id="graph-svg" width="600" height="300" viewBox="0 0 600 300" class="w-full h-auto">
+                    <path id="path1" d="M 100 150 L 250 150" stroke="#e2e8f0" stroke-width="4" fill="none" />
+                    <path id="path2" d="M 350 150 L 500 150" stroke="#e2e8f0" stroke-width="4" fill="none" />
+                    
+                    <path id="flow1" d="M 100 150 L 250 150" stroke="transparent" stroke-width="4" fill="none" class="gradient-flow" />
+                    <path id="flow2" d="M 350 150 L 500 150" stroke="transparent" stroke-width="4" fill="none" class="gradient-flow" />
+
+                    <circle cx="100" cy="150" r="30" fill="white" stroke="#6366f1" stroke-width="3" class="node" />
+                    <text x="100" y="155" text-anchor="middle" font-size="12" font-weight="bold" fill="#6366f1">X</text>
+                    
+                    <rect x="250" y="110" width="100" height="80" rx="15" fill="white" stroke="#10b981" stroke-width="3" class="node" />
+                    <text x="300" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#10b981">f(w·x)</text>
+                    <text id="val-mid" x="300" y="165" text-anchor="middle" font-size="10" fill="#94a3b8">w=2.0</text>
+
+                    <circle cx="500" cy="150" r="30" fill="white" stroke="#f43f5e" stroke-width="3" class="node" />
+                    <text x="500" y="155" text-anchor="middle" font-size="12" font-weight="bold" fill="#f43f5e">Loss</text>
+                </svg>
+
+                <div class="w-full max-w-md bg-slate-50 p-6 rounded-3xl border border-dashed mt-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Input Weight (w)</span>
+                        <div id="weight-display" class="text-xl font-black text-indigo-600 mono">2.0</div>
+                    </div>
+                    <input type="range" id="weight-slider" min="1" max="100" value="20" oninput="updateGraph()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                </div>
+            </div>
+
+            <div id="validation-area" class="glass-card p-6 border-2 text-center hidden">
+                <h4 class="text-sm font-black uppercase tracking-widest text-indigo-600 mb-1">Gradient Chain Analysis</h4>
+                <p id="chain-math" class="text-xs font-mono text-slate-500 font-medium"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeTask = 1;
+
+    function selectTask(id) {
+        activeTask = id;
+        document.querySelectorAll('.task-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('t'+id).classList.add('active');
+    }
+
+    function updateGraph() {
+        const w = (document.getElementById('weight-slider').value / 10).toFixed(1);
+        document.getElementById('weight-display').innerText = w;
+        document.getElementById('val-mid').innerText = `w=${w}`;
+        document.getElementById('validation-area').classList.add('hidden');
+    }
+
+    function triggerBackprop() {
+        const w = document.getElementById('weight-slider').value / 10;
+        const flow1 = document.getElementById('flow1');
+        const flow2 = document.getElementById('flow2');
+        const area = document.getElementById('validation-area');
+        const math = document.getElementById('chain-math');
+
+        // Visual animation
+        flow2.setAttribute('stroke', '#f43f5e');
+        setTimeout(() => {
+            flow1.setAttribute('stroke', '#10b981');
+            area.classList.remove('hidden');
+            math.innerHTML = `dLoss/dx = (dLoss/df) × (df/dx) <br> dLoss/dx = 1.0 × ${w} = <span class="text-indigo-600 font-bold">${w.toFixed(1)}</span>`;
+        }, 1000);
+
+        setTimeout(() => {
+            flow1.setAttribute('stroke', 'transparent');
+            flow2.setAttribute('stroke', 'transparent');
+        }, 3000);
+    }
+
+    window.onload = updateGraph;
+</script>
+</body>
+</html>
