@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability | Kinetic Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #334155; scroll-behavior: smooth; }
+        .aero-card { background: white; border: 1px solid #e2e8f0; border-radius: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .concept-visual-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; padding: 2rem; }
+        
+        /* Theory Visuals */
+        .dist-curve { height: 60px; width: 120px; border-bottom: 2px solid #6366f1; position: relative; overflow: hidden; }
+        .bell-path { fill: none; stroke: #6366f1; stroke-width: 2; }
+        
+        .venn-container { position: relative; width: 100px; height: 60px; }
+        .circle { position: absolute; width: 50px; height: 50px; border-radius: 50%; border: 2px solid; opacity: 0.6; }
+
+        /* Mission Styles */
+        .galton-stage { height: 240px; background: #0f172a; border-radius: 20px; position: relative; overflow: hidden; }
+        .ball { width: 8px; height: 8px; background: #6366f1; border-radius: 50%; position: absolute; top: -10px; left: 50%; transition: all 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+        .peg { width: 4px; height: 4px; background: #334155; border-radius: 50%; position: absolute; }
+        .bin { position: absolute; bottom: 0; background: rgba(99, 102, 241, 0.3); border: 1px solid rgba(99, 102, 241, 0.5); border-radius: 2px 2px 0 0; transition: height 0.3s; }
+        .deck-area { height: 180px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #f1f5f9; border-radius: 20px; }
+        .playing-card { width: 45px; height: 65px; background: white; border: 2px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; transition: all 0.5s; font-size: 14px; }
+        .card-red { color: #ef4444; }
+        .card-black { color: #1e293b; }
+        .card-hidden { opacity: 0.1; transform: scale(0.8) translateY(20px); pointer-events: none; }
+        .card-highlight { border-color: #6366f1; box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+        .people-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; height: 180px; padding: 15px; background: #f8fafc; border-radius: 20px; border: 2px dashed #e2e8f0; }
+        .person { width: 24px; height: 24px; background: #cbd5e1; border-radius: 50%; transition: 0.3s; }
+        .collision { background: #f43f5e !important; transform: scale(1.2); box-shadow: 0 0 10px #f43f5e; }
+        .door-container { display: flex; gap: 20px; justify-content: center; height: 150px; align-items: center; }
+        .door { width: 60px; height: 90px; background: #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; transition: 0.3s; border: 3px solid transparent; }
+        .door-open { background: #f1f5f9; color: #6366f1; border-color: #cbd5e1; }
+        .door-selected { border-color: #6366f1; }
+        .btn-action { background: #6366f1; color: white; padding: 12px 24px; border-radius: 14px; font-weight: 700; transition: 0.2s; }
+        .btn-action:hover { background: #4f46e5; transform: translateY(-2px); }
+        .reveal { display: none; animation: slideUp 0.6s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="py-12 px-6">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-16">
+            <h1 class="text-5xl font-black tracking-tight text-slate-900">Probability Distribution Visualizer <span class="text-indigo-600"></span></h1>
+            <p class="text-slate-500 mt-4 text-lg font-medium"></p>
+        </header>
+
+        <section class="grid md:grid-cols-2 gap-8 mb-16">
+            <div class="concept-visual-card flex gap-6 items-start">
+                <div class="flex-shrink-0">
+                    <div class="dist-curve">
+                        <svg viewBox="0 0 120 60" class="w-full h-full">
+                            <path d="M0,58 Q60,0 120,58" class="bell-path" />
+                        </svg>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-full bg-slate-200 border-dashed border-l"></div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-2">1. Random Variables</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        A mapping from world outcomes to the "X-Axis." The <b>Probability Density Function (PDF)</b> creates the curve, showing where data "likes" to hang out.
+                    </p>
+                </div>
+            </div>
+
+            <div class="concept-visual-card flex gap-6 items-start border-emerald-100">
+                <div class="flex-shrink-0">
+                    <div class="venn-container">
+                        <div class="circle border-emerald-500 bg-emerald-50" style="left: 0;"></div>
+                        <div class="circle border-indigo-500 bg-indigo-50" style="left: 30px;"></div>
+                        <div class="absolute left-[38px] top-4 text-[10px] font-bold text-slate-600">A∩B</div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 mb-2">2. Conditional Probability</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        If Event B happened, the rest of the world <b>disappears</b>. We only care about the intersection (A \cap B) divided by the total area of B.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="aero-card p-10 mb-12">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="galton-stage" id="galton-board"></div>
+                <div class="space-y-6">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Mission 01: Random Variables</span>
+                        <h2 class="text-3xl font-bold mt-2">Emergent Order</h2>
+                        <p class="text-slate-600 text-sm mt-4">Release data points. Each bounce is a random variable outcome. Watch the Bell Curve form.</p>
+                    </div>
+                    <button onclick="releaseBall()" class="btn-action">Release Data Point</button>
+                    <div id="msg1" class="reveal p-4 bg-indigo-50 rounded-2xl text-xs text-indigo-700 border-l-4 border-indigo-500">
+                        <b>Insight:</b> The pile follows the <b>PDF</b> of a Normal Distribution.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="aero-card p-10 mb-12">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="deck-area" id="deck"></div>
+                <div class="space-y-6">
+                    <div>
+                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Mission 02: Bayesian Filter</span>
+                        <h2 class="text-3xl font-bold mt-2">Sample Space Collapse</h2>
+                        <p class="text-slate-600 text-sm mt-4">We are looking for an Ace (Event A). Observe how probability shifts when we reveal the card is RED. <b></b>.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="applyCondition()" class="btn-action" style="background: #10b981;">Apply Condition: RED</button>
+                    </div>
+                    <div id="msg2" class="reveal p-4 bg-emerald-50 rounded-2xl text-xs text-emerald-700 border-l-4 border-emerald-500">
+                        <b>Insight:</b> P(A|B) is calculated only within the remaining red cards.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="aero-card p-10 mb-12">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="people-grid" id="people-box"></div>
+                <div class="space-y-6">
+                    <div>
+                        <span class="text-xs font-bold text-rose-500 uppercase tracking-widest">Mission 03: Collision Probability</span>
+                        <h2 class="text-3xl font-bold mt-2">The Birthday Trap</h2>
+                        <p class="text-slate-600 text-sm mt-4">In a room of 23 people, there is a 50% chance two share a birthday. Add people and watch for "collisions." <b></b>!</p>
+                    </div>
+                    <button onclick="addPerson()" class="btn-action" style="background: #f43f5e;">Add Person</button>
+                    <div id="msg3" class="reveal p-4 bg-rose-50 rounded-2xl text-xs text-rose-700 border-l-4 border-rose-500">
+                        <b>Paradox:</b>  Probability grows faster than intuition because we count pairs of people, not just individuals.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="aero-card p-10">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="door-container">
+                    <div class="door" onclick="selectDoor(0)" id="door0">1</div>
+                    <div class="door" onclick="selectDoor(1)" id="door1">2</div>
+                    <div class="door" onclick="selectDoor(2)" id="door2">3</div>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <span class="text-xs font-bold text-amber-500 uppercase tracking-widest">Mission 04: Monty Hall</span>
+                        <h2 class="text-3xl font-bold mt-2">Switch or Stay?</h2>
+                        <p id="monty-text" class="text-slate-600 text-sm mt-4">Pick a door. I will open a "goat" door. Information changes the odds!</p>
+                    </div>
+                    <div id="monty-controls" class="hidden flex gap-4">
+                        <button onclick="montyReveal()" class="btn-action" style="background: #f59e0b;">Reveal Goat</button>
+                    </div>
+                    <div id="msg4" class="reveal p-4 bg-amber-50 rounded-2xl text-xs text-amber-700 border-l-4 border-amber-500">
+                        <b>Insight:</b> Switching doubles your odds to 2/3!
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // GALTON LOGIC
+        const board = document.getElementById('galton-board');
+        const binCounts = [0, 0, 0, 0, 0, 0, 0];
+        const binElements = [];
+        for(let row=0; row<5; row++) {
+            for(let i=0; i<=row; i++) {
+                const peg = document.createElement('div');
+                peg.className = 'peg';
+                peg.style.top = (50 + row * 30) + 'px';
+                peg.style.left = (50 + (i - row/2) * 40) + '%';
+                board.appendChild(peg);
+            }
+        }
+        for(let i=0; i<7; i++) {
+            const bin = document.createElement('div');
+            bin.className = 'bin';
+            bin.style.width = '12%';
+            bin.style.left = (2 + i * 14) + '%';
+            bin.style.height = '0px';
+            board.appendChild(bin);
+            binElements.push(bin);
+        }
+        function releaseBall() {
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            board.appendChild(ball);
+            let currentBin = 3;
+            setTimeout(() => {
+                for(let step=0; step<5; step++) currentBin += (Math.random() > 0.5 ? 0.5 : -0.5);
+                const safeBin = Math.max(0, Math.min(6, Math.round(currentBin)));
+                ball.style.top = '180px';
+                ball.style.left = (8 + safeBin * 14) + '%';
+                ball.style.opacity = '0';
+                setTimeout(() => {
+                    binCounts[safeBin] += 10;
+                    binElements[safeBin].style.height = binCounts[safeBin] + 'px';
+                    ball.remove();
+                    document.getElementById('msg1').style.display = 'block';
+                }, 1000);
+            }, 100);
+        }
+
+        // DECK LOGIC
+        const deckData = [{v:'A', c:'red'}, {v:'K', c:'red'}, {v:'Q', c:'red'}, {v:'J', c:'red'}, {v:'A', c:'black'}, {v:'K', c:'black'}, {v:'Q', c:'black'}, {v:'J', c:'black'}];
+        const deckArea = document.getElementById('deck');
+        function renderDeck() {
+            deckArea.innerHTML = '';
+            deckData.forEach(card => {
+                const el = document.createElement('div');
+                el.className = `playing-card card-${card.c}`;
+                el.innerHTML = `<span>${card.v}</span><span>${card.c === 'red' ? '♥' : '♠'}</span>`;
+                deckArea.appendChild(el);
+            });
+        }
+        function applyCondition() {
+            document.querySelectorAll('.playing-card').forEach((el, i) => {
+                if(deckData[i].c === 'black') el.classList.add('card-hidden');
+            });
+            document.getElementById('msg2').style.display = 'block';
+        }
+        renderDeck();
+
+        // BIRTHDAY LOGIC
+        let bdays = [];
+        function addPerson() {
+            const bday = Math.floor(Math.random() * 365);
+            const person = document.createElement('div');
+            person.className = 'person';
+            if(bdays.includes(bday)) {
+                person.classList.add('collision');
+                document.getElementById('msg3').style.display = 'block';
+            }
+            bdays.push(bday);
+            document.getElementById('people-box').appendChild(person);
+        }
+
+        // MONTY LOGIC
+        let carDoor = Math.floor(Math.random() * 3);
+        let selected = null;
+        function selectDoor(i) {
+            selected = i;
+            document.querySelectorAll('.door').forEach(d => d.classList.remove('door-selected'));
+            document.getElementById(`door${i}`).classList.add('door-selected');
+            document.getElementById('monty-controls').classList.remove('hidden');
+        }
+        function montyReveal() {
+            let reveal;
+            do { reveal = Math.floor(Math.random() * 3); } while (reveal === carDoor || reveal === selected);
+            document.getElementById(`door${reveal}`).classList.add('door-open');
+            document.getElementById(`door${reveal}`).innerText = '🐐';
+            document.getElementById('msg4').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
