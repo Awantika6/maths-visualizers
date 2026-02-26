@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regularization techniques</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .task-node { transition: all 0.3s; border-left: 4px solid #cbd5e1; cursor: pointer; }
+        .task-node.active { border-left-color: #4f46e5; background: #f5f3ff; }
+        .btn-active { background: #4f46e5 !important; color: white !important; }
+        #validation-area { transition: all 0.4s ease; transform: translateY(10px); opacity: 0; }
+        #validation-area.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+<div class="max-w-7xl mx-auto">
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-end border-b pb-6">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Regularization techniques<span class="text-indigo-600"></span> <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded ml-2"></span></h1>
+            <p class="text-slate-500 text-sm"></p>
+        </div>
+        <button onclick="checkFinal()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-indigo-600 transition-all active:scale-95">
+            Verify My Math
+        </button>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-4 space-y-4">
+            <div class="glass-card p-5 bg-indigo-50/50 border-indigo-100">
+                <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">Concepts in Simple Terms</h3>
+                <div class="space-y-3 text-[11px] leading-relaxed text-slate-600">
+                    <p><strong>• Overfitting:</strong> Memorizing noise instead of learning patterns. Works on old data, fails on new data.</p>
+                    <p><strong>• Underfitting:</strong> Model is too simple to learn anything useful.</p>
+                    <p><strong>• L1 (Lasso):</strong> The "Minimalist" — forces useless features to exactly zero.</p>
+                    <p><strong>• L2 (Ridge):</strong> The "Equalizer" — keeps all features but shrinks their influence.</p>
+                    <p><strong>• Dropout:</strong> The "Team Player" — randomly silences neurons to force redundant learning.</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 space-y-3">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Diagnostic Missions</h3>
+                <div id="t1" onclick="switchTask(1)" class="task-node active p-4 rounded-xl">
+                    <p class="text-xs font-bold">Mission 1: Sparsity Check</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Use L1 to eliminate noise from Input 1 and 3.</p>
+                </div>
+                <div id="t2" onclick="switchTask(2)" class="task-node p-4 rounded-xl">
+                    <p class="text-xs font-bold">Mission 2: Budget Control</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Use L2 to decay weights to a stable state.</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-5 border-l-4 border-amber-400 bg-amber-50/50">
+                <h3 class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Coach Suggestion</h3>
+                <p id="coach-text" class="text-xs text-slate-600 leading-relaxed italic">"Adjust the slider to change the penalty intensity λ."</p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            <div class="glass-card p-8 flex flex-col items-center justify-center relative min-h-[400px]">
+                <svg id="network" width="500" height="260" class="w-full h-auto mb-8">
+                    <g id="links-group"></g>
+                    <g id="nodes-group"></g>
+                </svg>
+
+                <div class="w-full max-w-md bg-slate-50 p-6 rounded-3xl border">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex gap-2">
+                            <button onclick="setMode('L1')" id="m-L1" class="px-4 py-1.5 bg-white border rounded-full text-[10px] font-bold text-slate-400 btn-active transition-all">L1</button>
+                            <button onclick="setMode('L2')" id="m-L2" class="px-4 py-1.5 bg-white border rounded-full text-[10px] font-bold text-slate-400 transition-all">L2</button>
+                            <button onclick="setMode('Drop')" id="m-Drop" class="px-4 py-1.5 bg-white border rounded-full text-[10px] font-bold text-slate-400 transition-all">Dropout</button>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">λ Value</span>
+                            <div id="lambda-display" class="text-xl font-black text-indigo-600 mono">0.00</div>
+                        </div>
+                    </div>
+                    <input type="range" id="penalty-input" min="0" max="100" value="0" oninput="updateViz()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                </div>
+            </div>
+
+            <div id="validation-area" class="glass-card p-6 border-2 text-center">
+                <h4 id="res-title" class="text-sm font-black uppercase tracking-widest mb-1">Result Analysis</h4>
+                <p id="res-desc" class="text-xs text-slate-500 font-medium"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeTask = 1;
+    let mode = 'L1';
+    const neurons = [
+        {x: 50, y: 40, label: 'i1'}, {x: 50, y: 130, label: 'i2'}, {x: 50, y: 220, label: 'i3'},
+        {x: 250, y: 85, label: 'h1'}, {x: 250, y: 175, label: 'h2'},
+        {x: 450, y: 130, label: 'o1'}
+    ];
+
+    function switchTask(id) {
+        activeTask = id;
+        document.querySelectorAll('.task-node').forEach(n => n.classList.remove('active'));
+        document.getElementById('t'+id).classList.add('active');
+        document.getElementById('validation-area').classList.remove('show');
+        updateViz();
+    }
+
+    function setMode(m) {
+        mode = m;
+        ['m-L1', 'm-L2', 'm-Drop'].forEach(btn => document.getElementById(btn).classList.remove('btn-active'));
+        document.getElementById('m-'+m).classList.add('btn-active');
+        updateViz();
+    }
+
+    function updateViz() {
+        const val = document.getElementById('penalty-input').value;
+        document.getElementById('lambda-display').innerText = (val/100).toFixed(2);
+        const lG = document.getElementById('links-group');
+        const nG = document.getElementById('nodes-group');
+        lG.innerHTML = ''; nG.innerHTML = '';
+
+        neurons.forEach((n, i) => {
+            neurons.forEach((t, j) => {
+                if((n.label.startsWith('i') && t.label.startsWith('h')) || (n.label.startsWith('h') && t.label.startsWith('o'))) {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    let op = 0.8, w = 5;
+
+                    if(mode === 'L1') {
+                        if((i===0 || i===2) && n.label.startsWith('i')) op = Math.max(0, 0.8 - val/60);
+                        w = Math.max(1, 5 - val/50);
+                    } else if(mode === 'L2') {
+                        w = Math.max(2, 5 - val/30);
+                        op = 0.8 - val/200;
+                    } else {
+                        const dr = val > 20 && (i+j+parseInt(val)) % 4 === 0;
+                        op = dr ? 0.05 : 0.8; w = dr ? 1 : 5;
+                    }
+
+                    line.setAttribute("x1", n.x); line.setAttribute("y1", n.y);
+                    line.setAttribute("x2", t.x); line.setAttribute("y2", t.y);
+                    line.setAttribute("stroke", mode==='L1'?'#4f46e5':mode==='L2'?'#10b981':'#f43f5e');
+                    line.setAttribute("stroke-width", w); line.setAttribute("opacity", op);
+                    lG.appendChild(line);
+                }
+            });
+        });
+
+        neurons.forEach(n => {
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", n.x); c.setAttribute("cy", n.y);
+            c.setAttribute("r", 10); c.setAttribute("fill", "white");
+            c.setAttribute("stroke", "#e2e8f0"); c.setAttribute("stroke-width", "3");
+            nG.appendChild(c);
+        });
+
+        const coach = document.getElementById('coach-text');
+        if(mode === 'L1') coach.innerText = "L1 (Lasso) creates sparsity. Notice how noise nodes disconnect as λ increases.";
+        else if(mode === 'L2') coach.innerText = "L2 (Ridge) shrinks weights but keeps them all active. Ideal for balanced data.";
+        else coach.innerText = "Dropout silences neurons to prevent co-adaptation and force redundancy.";
+    }
+
+    function checkFinal() {
+        const val = document.getElementById('penalty-input').value;
+        const area = document.getElementById('validation-area');
+        const title = document.getElementById('res-title');
+        const desc = document.getElementById('res-desc');
+        area.classList.add('show');
+
+        let success = false;
+        if(activeTask === 1 && mode === 'L1' && val > 75) success = true;
+        if(activeTask === 2 && mode === 'L2' && val > 50 && val < 90) success = true;
+
+        if(success) {
+            area.className = "glass-card p-6 border-2 border-emerald-500 bg-emerald-50 text-emerald-700 show";
+            title.innerText = "Verification: PASSED";
+            desc.innerText = "The model is stabilized. Generalization performance has been optimized.";
+        } else {
+            area.className = "glass-card p-6 border-2 border-rose-500 bg-rose-50 text-rose-700 show";
+            title.innerText = "Verification: FAILED";
+            desc.innerText = "Current penalty λ is either too low (overfit) or too high (underfit).";
+        }
+    }
+
+    window.onload = updateViz;
+</script>
+</body>
+</html>
