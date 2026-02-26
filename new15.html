@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCA Observatory | Dynamic Data Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background: #fdfbf7; color: #44403c; }
+        
+        .observatory-glass {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 40px;
+        }
+
+        /* Task 1: The Warp Stream */
+        @keyframes stream {
+            0% { transform: translateX(-100%) scaleY(1); }
+            50% { transform: translateX(0%) scaleY(0.2); }
+            100% { transform: translateX(100%) scaleY(1); }
+        }
+        .data-stream { animation: stream 4s infinite linear; }
+
+        /* Task 2: The Alignment */
+        .rotator { transition: transform 0.1s linear; }
+        
+        .control-knob {
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e7e5e4;
+            border-radius: 10px;
+        }
+        .control-knob::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid white;
+        }
+
+        .hidden-explanation { display: none; animation: fadeIn 0.8s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="py-12 px-6">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-16">
+            <h2 class="text-5xl font-light tracking-tighter">PCA </h2> <h4><span class="font-bold text-emerald-500 italic">  (Principal Component Analysis) </span></h4>
+            <div class="mt-6 max-w-2xl bg-emerald-50 p-6 rounded-3xl text-emerald-800 text-sm leading-relaxed border border-emerald-100">
+                <h3 class="font-bold mb-2">The Concept</h3>
+                PCA is the science of finding the best angle to view complex data. If data is a 3D swarm of bees, PCA finds the 2D "plane" where the swarm looks the widest. This direction of maximum spread is the Principal Component.
+            </div>
+        </header>
+
+        <div class="grid lg:grid-cols-2 gap-12">
+            
+            <div class="observatory-glass p-10 flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Task 01: Information Compression</span>
+                    <h2 class="text-2xl font-bold mt-2 mb-4">The Flattening Stream</h2>
+                    <p class="text-stone-500 text-sm mb-8">A 3D data stream is passing through a "Dimensional Gate." You must squash it into a 2D sheet. To keep the most info, do you squash it along the <b>Widest</b> axis or the <b>Narrowest</b> axis?</p>
+                </div>
+                
+                <div class="h-32 bg-stone-900 rounded-3xl relative overflow-hidden flex items-center mb-8">
+                    <div class="w-full h-8 bg-emerald-400/30 data-stream"></div>
+                    <div class="absolute inset-0 border-2 border-emerald-500/20 rounded-3xl"></div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button onclick="revealTask('exp1', this)" class="w-full py-4 rounded-2xl border-2 border-stone-200 font-bold hover:bg-emerald-50 transition">Narrowest Axis</button>
+                    <button onclick="revealTask('exp1', this, true)" class="w-full py-4 rounded-2xl border-2 border-stone-200 font-bold hover:bg-emerald-50 transition">Widest Axis</button>
+                </div>
+
+                <div id="exp1" class="hidden-explanation mt-6 p-5 bg-white rounded-2xl text-xs text-stone-500 italic border border-stone-100">
+                    <b>Note:</b> You squash the <b>Narrowest</b> axis! By removing the direction with the least "spread" (Variance), the resulting 2D sheet keeps the maximum possible detail.
+                </div>
+            </div>
+
+            <div class="observatory-glass p-10 flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Task 02: Spatial Alignment</span>
+                    <h2 class="text-2xl font-bold mt-2 mb-4">Finding the PC1 Axis</h2>
+                    <p class="text-stone-500 text-sm mb-8">The green line represents your <b>Principal Component</b>. Rotate the data cloud until the green line perfectly tracks the <b>longest</b> path of the moving particles.</p>
+                </div>
+
+                <div class="h-32 bg-stone-100 rounded-3xl relative flex items-center justify-center mb-8 overflow-hidden">
+                    <div id="dataCloud" class="rotator w-48 h-12 bg-emerald-200/50 rounded-full flex items-center justify-around px-4">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    </div>
+                    <div class="absolute w-64 h-0.5 bg-emerald-600 shadow-[0_0_10px_#10b981]"></div>
+                </div>
+
+                <input type="range" min="0" max="180" value="0" class="control-knob mb-4" id="rotatorSlider" oninput="rotateCloud(this.value)">
+
+                <button onclick="revealTask('exp2', this, true)" class="w-full py-4 bg-stone-800 text-white rounded-2xl font-bold">Lock Alignment</button>
+
+                <div id="exp2" class="hidden-explanation mt-6 p-5 bg-white rounded-2xl text-xs text-stone-500 italic border border-stone-100">
+                    <b>Note:</b> The direction you just found is the <b>Eigenvector</b> of the Covariance Matrix. It points in the direction of the greatest variance.
+                </div>
+            </div>
+
+            <div class="observatory-glass p-10 flex flex-col justify-between lg:col-span-2">
+                <div class="grid md:grid-cols-2 gap-10 items-center">
+                    <div>
+                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Task 03: Relationship Sifting</span>
+                        <h2 class="text-2xl font-bold mt-2 mb-4">The Redundancy Check</h2>
+                        <p class="text-stone-500 text-sm mb-6">If "Height" and "Weight" in a dataset always move together, they are <b>highly correlated</b>. In PCA, do we keep both as separate components, or merge them into one axis?</p>
+                        <div class="flex gap-4">
+                            <button onclick="revealTask('exp3', this, true)" class="px-8 py-3 rounded-xl bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">Merge into One</button>
+                            <button onclick="revealTask('exp3', this)" class="px-8 py-3 rounded-xl bg-stone-50 text-stone-700 font-bold border border-stone-200">Keep Separate</button>
+                        </div>
+                    </div>
+                    <div class="h-48 bg-stone-50 rounded-[40px] border border-dashed border-stone-200 flex items-center justify-center">
+                        <div class="flex gap-2">
+                            <div class="w-4 h-12 bg-emerald-400 rounded-full animate-bounce"></div>
+                            <div class="w-4 h-12 bg-emerald-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="exp3" class="hidden-explanation mt-8 p-6 bg-white rounded-2xl text-sm text-stone-500 italic">
+                    <b> Note:</b> PCA specializes in <b>Redundancy Reduction</b>. If variables are correlated, they share the same Eigenvector. Merging them simplifies the data without losing the relationship.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function rotateCloud(val) {
+            document.getElementById('dataCloud').style.transform = `rotate(${val}deg)`;
+        }
+
+        function revealTask(id, btn, isCorrect) {
+            document.getElementById(id).style.display = 'block';
+            if(isCorrect) {
+                btn.style.backgroundColor = '#10b981';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#10b981';
+            } else {
+                btn.style.backgroundColor = '#fca5a5';
+            }
+        }
+    </script>
+</body>
+</html>
