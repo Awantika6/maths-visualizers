@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Architect | Visual Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .choice-btn { transition: all 0.2s; border: 2px solid #e2e8f0; cursor: pointer; }
+        .choice-btn:hover:not(.disabled) { border-color: #6366f1; background: #f5f3ff; transform: scale(1.02); }
+        .correct { background: #d1fae5 !important; border-color: #10b981 !important; color: #065f46; }
+        .wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
+        .explanation { display: none; animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .visual-box { background: #f1f5f9; border-radius: 1.5rem; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="flex justify-between items-center mb-12">
+            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">Matrix<span class="text-indigo-600">Architect</span></h1>
+            <div id="xp-counter" class="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-indigo-200">0 XP</div>
+        </header>
+
+        <div class="space-y-12">
+
+<main class="max-w-5xl mx-auto px-6 pb-24">
+        
+        <section class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-extrabold mb-4">The Matrix Operations </h2>
+                <p class="text-slate-500 max-w-2xl mx-auto"></p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass p-8 rounded-3xl">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-indigo-600 font-bold">×</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Multiplication</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">The <b>"Combiner."</b> It calculates the interaction between two sets of data by multiplying rows of the first by columns of the second.</p>
+                </div>
+
+                <div class="glass p-8 rounded-3xl">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-blue-600 font-bold">T</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Transpose</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">The <b>"Reorienter."</b> It flips a matrix over its diagonal. Rows become columns, and columns become rows.</p>
+                </div>
+
+                <div class="glass p-8 rounded-3xl">
+                    <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-emerald-600 font-bold">|A|</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Determinant</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">The <b>"Scale Factor."</b> A single number that tells you if the matrix expands, shrinks, or collapses the area of an object.</p>
+                </div>
+
+                <div class="glass p-8 rounded-3xl">
+                    <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="text-violet-600 font-bold">−1</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Inverse</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">The <b>"Undo Button."</b> It reverses a transformation. It only exists if the Determinant is not zero.</p>
+                </div>
+            </div>
+        </section>
+<section>
+            <h2 class="text-3xl font-black mb-8 border-l-4 border-indigo-600 pl-4">Tasks Briefings</h2>
+            
+            <div id="task1" class="glass p-8 rounded-[2rem] grid md:grid-cols-2 gap-10 items-center">
+                <div class="visual-box">
+                    <svg width="160" height="120" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="50" y="10" width="60" height="100" rx="8" stroke="#6366f1" stroke-width="4" stroke-dasharray="4 4" />
+                        <path d="M110 40 L140 60 L110 80" stroke="#6366f1" stroke-width="3" fill="none"/>
+                        <rect x="20" y="30" width="100" height="60" rx="8" fill="#6366f1" fill-opacity="0.2" stroke="#6366f1" stroke-width="4" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-indigo-600 font-bold text-xs uppercase tracking-widest">Task 01: Photo App</span>
+                    <h2 class="text-2xl font-extrabold mt-2 mb-4">Portrait to Landscape</h2>
+                    <p class="text-slate-600 mb-6">A user tilts their phone. To display the photo correctly, the software must flip the <b>Rows and Columns</b> of the pixel grid. This is called:</p>
+                    <div class="flex gap-4">
+                        <button onclick="check('task1', 'Transpose', 100, this)" class="choice-btn px-6 py-3 rounded-xl font-bold w-full">Inverse</button>
+                        <button onclick="check('task1', 'Transpose', 100, this)" class="choice-btn px-6 py-3 rounded-xl font-bold w-full">Transpose</button>
+                    </div>
+                    <div class="explanation mt-6 p-4 rounded-xl bg-indigo-50 border-l-4 border-indigo-500 text-indigo-900 text-sm">
+                        <b>Correct!</b> Transpose (A^T) flips the matrix dimensions. A $1920 \times 1080$ grid becomes $1080 \times 1920$.
+                    </div>
+                </div>
+            </div>
+
+            <div id="task2" class="glass p-8 rounded-[2rem] grid md:grid-cols-2 gap-10 items-center">
+                <div class="md:order-last visual-box">
+                    <svg width="160" height="120" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="20" y="30" width="50" height="50" stroke="#10b981" stroke-width="3" />
+                        <path d="M100 55 L140 55" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 4" />
+                        <path d="M110 30 L150 30 L140 80 L100 80 Z" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="3" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-emerald-600 font-bold text-xs uppercase tracking-widest">Task 02: Space Scaling</span>
+                    <h2 class="text-2xl font-extrabold mt-2 mb-4">The Shape Shifter</h2>
+                    <p class="text-slate-600 mb-6">A designer applies a matrix to a square. The square stretches into a parallelogram. Which value determines how much the <b>Area</b> has changed?</p>
+                    <div class="flex gap-4">
+                        <button onclick="check('task2', 'Determinant', 100, this)" class="choice-btn px-6 py-3 rounded-xl font-bold w-full">Determinant</button>
+                        <button onclick="check('task2', 'Determinant', 100, this)" class="choice-btn px-6 py-3 rounded-xl font-bold w-full">Multiplication</button>
+                    </div>
+                    <div class="explanation mt-6 p-4 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 text-emerald-900 text-sm">
+                        <b>Exactly!</b> The Determinant is the scale factor of the area. If it's $2$, the square's area doubles. If it's $0$, the square vanishes!
+                    </div>
+                </div>
+            </div>
+
+            <div id="task3" class="glass p-8 rounded-[2rem] grid md:grid-cols-2 gap-10 items-center">
+                <div class="visual-box">
+                    <svg width="160" height="120" viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="60" r="15" fill="#8b5cf6" />
+                        <path d="M65 50 Q80 30 95 50" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arrow)"/>
+                        <path d="M95 70 Q80 90 65 70" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+                        <circle cx="120" cy="60" r="15" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 4" />
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                              <path d="M0,0 L0,6 L9,3 z" fill="#8b5cf6" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-violet-600 font-bold text-xs uppercase tracking-widest">Task 03: Undo Action</span>
+                    <h2 class="text-2xl font-extrabold mt-2 mb-4">The Mirror Path</h2>
+                    <p class="text-slate-600 mb-6">A coordinate is moved from point $A$ to point $B$. To find the exact path back to $A$, you must apply the:</p>
+                    <div class="flex gap-4">
+                        <button onclick="check('task3', 'Inverse', 100, this)" class="choice-btn px-6 py-3 rounded-xl font-bold w-full">Transpose</button>
+                        <button onclick="check('task3', 'Inverse', 100, this)" class="choice-btn px-6 py-3 rounded-xl font-bold w-full">Inverse</button>
+                    </div>
+                    <div class="explanation mt-6 p-4 rounded-xl bg-violet-50 border-l-4 border-violet-500 text-violet-900 text-sm">
+                        <b>Spot on!</b> The Inverse (M^{-1}) is the "Undo" function. It reverses the linear transformation and brings you back home.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        function check(taskId, correct, xp, el) {
+            const container = document.getElementById(taskId);
+            const buttons = container.querySelectorAll('.choice-btn');
+            const info = container.querySelector('.explanation');
+
+            if (el.innerText === correct) {
+                el.classList.add('correct');
+                score += xp;
+                document.getElementById('xp-counter').innerText = score + " XP";
+            } else {
+                el.classList.add('wrong');
+                buttons.forEach(b => { if(b.innerText === correct) b.classList.add('correct'); });
+            }
+            buttons.forEach(b => { b.disabled = true; b.classList.add('disabled'); });
+            info.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
