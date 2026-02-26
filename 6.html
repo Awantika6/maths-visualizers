@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization Arena v5: Kinetic Theory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f1f5f9; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .theory-pill { border-left: 4px solid #6366f1; background: rgba(99, 102, 241, 0.05); }
+        .task-step { border-left: 3px solid #334155; transition: all 0.3s; cursor: pointer; }
+        .task-step.active { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
+        #feedback-box { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateX(-20px); opacity: 0; }
+        #feedback-box.show { transform: translateX(0); opacity: 1; }
+        canvas { cursor: crosshair; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+<div class="max-w-7xl mx-auto">
+    <header class="flex justify-between items-center mb-8 border-b border-slate-800 pb-6">
+        <div>
+            <h1 class="text-3xl font-black tracking-tight text-white">Convex functions and  optimization<span class="text-indigo-500"></span></h1>
+            <p class="text-slate-400 text-sm italic"></p>
+        </div>
+        <button onclick="startMission()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all active:scale-95">
+            Start Mission
+        </button>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-4 space-y-4">
+            <div class="glass-card p-6 rounded-3xl theory-pill shadow-xl">
+                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">The Simple Concept</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Optimization is the search for the "lowest energy" state. We use the Gradient (slope) to feel which way is down. In convex bowls, down always leads home. In non-convex terrain, "down" can lead to a dead-end trap.
+                </p>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl border border-slate-800">
+                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">Active Lab Tasks</h3>
+                <div class="space-y-3" id="task-list">
+                    <div onclick="selectTask(1)" id="t1" class="task-step p-3 rounded-xl active">
+                        <p class="text-xs font-bold">Task 1: Global Stability</p>
+                        <p class="text-[10px] text-slate-400">Prove the convex bowl has only one zero-gradient point.</p>
+                    </div>
+                    <div onclick="selectTask(2)" id="t2" class="task-step p-3 rounded-xl">
+                        <p class="text-xs font-bold">Task 2: Trap Detection</p>
+                        <p class="text-[10px] text-slate-400">Find a "Fake Bottom" where the ball stops but energy remains high.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedback-box" class="glass-card p-5 rounded-3xl border border-indigo-500/30">
+                <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2">Coach Guidance</h3>
+                <p id="feedback-text" class="text-xs text-slate-300 leading-relaxed italic">"Initiate mission to begin surface diagnostic."</p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-6">
+            <div class="glass-card p-4 rounded-[40px] shadow-2xl overflow-hidden relative border border-slate-800">
+                <div class="absolute top-8 left-8 flex gap-3 z-10">
+                    <button onclick="setFunction('convex')" id="btn-convex" class="px-5 py-2 rounded-full text-[10px] font-bold bg-indigo-600 text-white">CONVEX</button>
+                    <button onclick="setFunction('nonconvex')" id="btn-nonconvex" class="px-5 py-2 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400">NON-CONVEX</button>
+                </div>
+                
+                <canvas id="optCanvas" width="800" height="400" class="w-full bg-slate-950/40 rounded-[32px]"></canvas>
+
+                <div class="absolute bottom-8 left-8 right-8 flex justify-between items-center pointer-events-none">
+                    <div class="bg-slate-900/90 px-5 py-3 rounded-2xl border border-slate-700">
+                        <span class="text-[9px] text-slate-500 block uppercase font-bold tracking-widest">Slope (Gradient)</span>
+                        <span id="data-grad" class="text-sm font-bold mono text-white">0.000</span>
+                    </div>
+                    <div class="bg-indigo-600 px-8 py-4 rounded-3xl shadow-xl text-white border border-white/10">
+                        <span class="text-[9px] opacity-70 block uppercase font-bold tracking-widest">System Energy f(x)</span>
+                        <span id="data-loss" class="text-2xl font-black tracking-tighter mono">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('optCanvas');
+    const ctx = canvas.getContext('2d');
+    let currentType = 'convex';
+    let probePoint = null;
+    let missionActive = false;
+
+    const fConvex = (x) => 0.002 * Math.pow(x - 400, 2) + 120;
+    const fNonConvex = (x) => 55 * Math.sin(x * 0.04) + 0.0018 * Math.pow(x - 400, 2) + 220;
+    const dConvex = (x) => 0.004 * (x - 400);
+    const dNonConvex = (x) => 2.2 * Math.cos(x * 0.04) + 0.0036 * (x - 400);
+
+    function startMission() {
+        missionActive = true;
+        document.getElementById('feedback-box').classList.add('show');
+        document.getElementById('feedback-text').innerText = "Probe Active. Tap the surface to analyze the local gradient.";
+    }
+
+    function selectTask(id) {
+        document.querySelectorAll('.task-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('t' + id).classList.add('active');
+        setFunction(id === 1 ? 'convex' : 'nonconvex');
+    }
+
+    function setFunction(type) {
+        currentType = type;
+        probePoint = null;
+        document.getElementById('btn-convex').className = type === 'convex' ? 'px-5 py-2 rounded-full text-[10px] font-bold bg-indigo-600 text-white' : 'px-5 py-2 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400';
+        document.getElementById('btn-nonconvex').className = type === 'nonconvex' ? 'px-5 py-2 rounded-full text-[10px] font-bold bg-rose-600 text-white' : 'px-5 py-2 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400';
+        draw();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const func = currentType === 'convex' ? fConvex : fNonConvex;
+        
+        ctx.beginPath();
+        ctx.strokeStyle = currentType === 'convex' ? '#6366f1' : '#f43f5e';
+        ctx.lineWidth = 4;
+        for(let x = 0; x <= canvas.width; x++) {
+            const y = canvas.height - func(x);
+            if(x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        if(probePoint) {
+            const py = canvas.height - func(probePoint);
+            ctx.fillStyle = '#10b981';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#10b981';
+            ctx.beginPath(); ctx.arc(probePoint, py, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            const grad = (currentType === 'convex' ? dConvex : dNonConvex)(probePoint);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(probePoint - 30, py + grad * 30);
+            ctx.lineTo(probePoint + 30, py - grad * 30);
+            ctx.stroke();
+        }
+    }
+
+    canvas.addEventListener('click', (e) => {
+        if(!missionActive) { alert("Please click 'Start Mission' first!"); return; }
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        probePoint = x;
+
+        const func = currentType === 'convex' ? fConvex : fNonConvex;
+        const grad = (currentType === 'convex' ? dConvex : dNonConvex)(x);
+        
+        document.getElementById('data-grad').innerText = grad.toFixed(3);
+        document.getElementById('data-loss').innerText = (func(x)/10).toFixed(2);
+        
+        const feedback = document.getElementById('feedback-text');
+        if(Math.abs(grad) < 0.2) {
+            feedback.innerText = currentType === 'convex' ? "🎯 Target Verified! This is the absolute global minimum." : "⚠️ Warning: Zero slope detected, but energy is still high. You are in a local trap!";
+        } else {
+            feedback.innerText = grad > 0 ? "Slope suggests moving LEFT to find lower energy." : "Slope suggests moving RIGHT to find lower energy.";
+        }
+        draw();
+    });
+
+    window.onload = () => setFunction('convex');
+</script>
+</body>
+</html>
