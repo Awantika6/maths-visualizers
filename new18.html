@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVD | Deconstruction Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; color: #1e293b; scroll-behavior: smooth; }
+        .blueprint { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+        .tech-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        
+        /* Mission 1 Grid */
+        .pixel-canvas { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; width: 160px; }
+        .data-bit { width: 16px; height: 16px; background: #94a3b8; border-radius: 2px; transition: all 0.4s ease; opacity: 0.1; }
+        .active-bit { background: #0ea5e9; opacity: 1; box-shadow: 0 0 8px #0ea5e9; }
+        
+        /* Mission 2 Wave */
+        .wave-container { height: 100px; display: flex; align-items: flex-end; gap: 2px; }
+        .wave-bar { width: 8px; background: #f472b6; transition: height 0.3s ease; border-radius: 4px 4px 0 0; }
+
+        /* Mission 3 Projection */
+        .projection-plane { width: 180px; height: 120px; border: 2px dashed #6366f1; border-radius: 12px; position: relative; }
+        .data-node { position: absolute; width: 10px; height: 10px; background: #6366f1; border-radius: 50%; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Tooling UI */
+        .slider-custom { -webkit-appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 5px; outline: none; }
+        .slider-custom::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: #0ea5e9; border: 4px solid white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        .explanation { display: none; animation: slideUp 0.6s ease-out forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="py-12 px-6 blueprint">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-16">
+            <h1 class="text-5xl font-extrabold tracking-tighter text-slate-900">Singular Value Decomposition (SVD) <span class="text-sky-500"></span></h1>
+            <p class="text-slate-500 mt-4 text-lg font-medium"></p>
+        </header>
+
+<h3><b>CONCEPT </b></h3>
+
+<p><b>Singular Value Decomposition factorizes any matrix A into U\Sigma Vᵀ, where U and V are orthogonal rotations and Sigma is a diagonal scaling matrix.</b></p>
+
+
+        <section class="grid lg:grid-cols-3 gap-6 mb-16">
+            <div class="tech-card p-6 border-t-4 border-sky-500">
+
+                <h3 class="font-bold text-sky-600 mb-2">U Matrix</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">Left Singular Vectors. This handles the <b>Final Rotation</b> of the data in the output space.</p>
+            </div>
+            <div class="tech-card p-6 border-t-4 border-indigo-500">
+                <h3 class="font-bold text-indigo-600 mb-2">Σ (Sigma) Matrix</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">The <b>Scaling Factor</b>. Diagonal values that tell us the "strength" or importance of each dimension.</p>
+            </div>
+            <div class="tech-card p-6 border-t-4 border-pink-500">
+                <h3 class="font-bold text-pink-600 mb-2">Vᵀ Matrix</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">Right Singular Vectors. This handles the <b>Initial Rotation</b> to align the data with principal axes.</p>
+            </div>
+        </section>
+
+        <section class="tech-card p-10 mb-12">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="flex flex-col items-center justify-center bg-slate-900 p-12 rounded-[32px]">
+                    <div class="pixel-canvas" id="canvas1"></div>
+                    <div class="mt-8 font-mono text-[10px] text-sky-400 tracking-widest uppercase">Rank Approximation: k = <span id="rank-val1">0</span></div>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <span class="text-xs font-black text-sky-500 uppercase tracking-widest">Mission 01: Reconstruction</span>
+                        <h2 class="text-3xl font-bold mt-2">Reconstruct the Signal</h2>
+                        <p class="text-slate-600 text-sm mt-4 leading-relaxed">Find the minimum <b>k</b> required to make the hidden "X" shape appear. Low-rank approximations preserve the "essence" of a matrix.</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                        <input type="range" min="0" max="8" value="0" class="slider-custom" id="slider1">
+                    </div>
+                    <div id="msg1" class="explanation p-5 bg-sky-50 rounded-2xl border-l-4 border-sky-500">
+                        <p class="text-xs text-sky-700 font-bold italic">Compression Achieved! Only the top singular values were needed to define the structure.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tech-card p-10 mb-12">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="flex flex-col items-center justify-center bg-slate-900 p-12 rounded-[32px]">
+                    <div class="wave-container" id="wave-display"></div>
+                    <div class="mt-8 font-mono text-[10px] text-pink-400 tracking-widest uppercase">Singular Value Thresholding</div>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <span class="text-xs font-black text-pink-500 uppercase tracking-widest">Mission 02: Denoising</span>
+                        <h2 class="text-3xl font-bold mt-2">The Signal Sieve</h2>
+                        <p class="text-slate-600 text-sm mt-4 leading-relaxed">Small singular values often represent noise or high-frequency interference. Slide the threshold to "clip" the low-energy signals and isolate the main wave.</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                        <input type="range" min="10" max="100" value="100" class="slider-custom" id="slider2" style="accent-color: #f472b6;">
+                    </div>
+                    <div id="msg2" class="explanation p-5 bg-pink-50 rounded-2xl border-l-4 border-pink-500">
+                        <p class="text-xs text-pink-700 font-bold italic">Signal Isolated! By zeroing out small singular values, the random interference is removed.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tech-card p-10">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="flex flex-col items-center justify-center bg-slate-900 p-12 rounded-[32px]">
+                    <div class="projection-plane" id="node-plane"></div>
+                    <div class="mt-8 font-mono text-[10px] text-indigo-400 tracking-widest uppercase">Principal Component Projection</div>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <span class="text-xs font-black text-indigo-500 uppercase tracking-widest">Mission 03: Latent Semantic Analysis</span>
+                        <h2 class="text-3xl font-bold mt-2">Find the Hidden Cluster</h2>
+                        <p class="text-slate-600 text-sm mt-4 leading-relaxed">SVD reveals hidden relationships. Rotate the projection until the data points align into distinct clusters. This is how search engines understand that "Car" and "Automobile" are related.</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                        <input type="range" min="0" max="360" value="0" class="slider-custom" id="slider3" style="accent-color: #6366f1;">
+                    </div>
+                    <div id="msg3" class="explanation p-5 bg-indigo-50 rounded-2xl border-l-4 border-indigo-500">
+                        <p class="text-xs text-indigo-700 font-bold italic">Clusters Identified! SVD mapped the data into a latent space where hidden patterns emerge.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Init Task 1 (Reconstruction)
+        const canvas1 = document.getElementById('canvas1');
+        const xMask = [0, 7, 9, 14, 18, 21, 27, 28, 35, 36, 42, 45, 49, 54, 56, 63];
+        for(let i=0; i<64; i++) {
+            const bit = document.createElement('div');
+            bit.className = 'data-bit';
+            canvas1.appendChild(bit);
+        }
+        const bits = canvas1.querySelectorAll('.data-bit');
+        document.getElementById('slider1').oninput = function() {
+            const k = parseInt(this.value);
+            document.getElementById('rank-val1').innerText = k;
+            bits.forEach((bit, index) => {
+                bit.classList.remove('active-bit');
+                if (xMask.includes(index) && index % 9 < k + 2 && index % 7 < k + 2) bit.classList.add('active-bit');
+            });
+            document.getElementById('msg1').style.display = k >= 5 ? 'block' : 'none';
+        };
+
+        // Init Task 2 (Denoising)
+        const waveDisplay = document.getElementById('wave-display');
+        const barCount = 15;
+        for(let i=0; i<barCount; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'wave-bar';
+            bar.style.height = (Math.random() * 80 + 10) + 'px';
+            waveDisplay.appendChild(bar);
+        }
+        const bars = waveDisplay.querySelectorAll('.wave-bar');
+        document.getElementById('slider2').oninput = function() {
+            const threshold = parseInt(this.value);
+            bars.forEach((bar, i) => {
+                let h = (i % 4 === 0) ? 90 : (Math.random() * 30 + 10); // Simulated Signal vs Noise
+                if (h > threshold) bar.style.height = '5px'; // "Clip" the noise
+                else bar.style.height = h + 'px';
+            });
+            document.getElementById('msg2').style.display = threshold <= 40 ? 'block' : 'none';
+        };
+
+        // Init Task 3 (Projection)
+        const plane = document.getElementById('node-plane');
+        for(let i=0; i<12; i++) {
+            const node = document.createElement('div');
+            node.className = 'data-node';
+            plane.appendChild(node);
+        }
+        const nodes = plane.querySelectorAll('.data-node');
+        document.getElementById('slider3').oninput = function() {
+            const angle = parseInt(this.value) * (Math.PI / 180);
+            nodes.forEach((node, i) => {
+                const radius = (i < 6) ? 20 : 50; // Two distinct clusters
+                const offset = (i < 6) ? 0 : Math.PI;
+                const x = 90 + Math.cos(angle + offset + (i*0.5)) * radius;
+                const y = 60 + Math.sin(angle + offset + (i*0.5)) * radius;
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+            });
+            // Show success if angle aligns nodes into vertical groups
+            if(this.value > 160 && this.value < 200) document.getElementById('msg3').style.display = 'block';
+            else document.getElementById('msg3').style.display = 'none';
+        };
+        // Initial draw for Task 3
+        document.getElementById('slider3').dispatchEvent(new Event('input'));
+    </script>
+</body>
+</html>
